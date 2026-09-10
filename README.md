@@ -1,4 +1,4 @@
-# TableroGO v1.1.5
+# TableroGO v1.1.6
 
 PWA de notas con acuario animado. Funciona en modo local inmediatamente; para cuentas y sincronización usa GitHub Pages + Supabase.
 
@@ -18,8 +18,8 @@ Sube todos los archivos a la raíz del repositorio. En **Settings > Pages**, sel
 ## Reglas incluidas
 
 - Título de 1 a 18 caracteres; nota de 1 a 500.
-- Máximo 15 notas por charco; se crea automáticamente Charco 02, 03, etc.
-- Charcos manuales con prefijo “Charco”.
+- Máximo 15 notas por pizarra; se crea automáticamente Pizarra 02, 03, etc.
+- Pizarras manuales con prefijo “Pizarra”.
 - Edición, movimiento, borrado con confirmación y fecha/hora.
 - Cada usuario solo puede consultar y modificar sus propios registros mediante RLS.
 - Desliza verticalmente o usa la rueda para girar la pecera cilíndrica.
@@ -27,5 +27,7 @@ Sube todos los archivos a la raíz del repositorio. En **Settings > Pages**, sel
 - Fondos seleccionables: Océano claro y Barco embrujado.
 - Perspectiva de cámara de 360°: los peces salen del campo visual por los lados y conservan profundidad propia.
 - Atrás en Android cierra primero modales, después vuelve al menú y desde el menú cierra la sesión.
-- Mi charco ahora es un pizarrón escolar sin animaciones ni físicas.
+- Mi pizarra usa un tablero escolar sin animaciones ni físicas.
 - Las notas aparecen ordenadas de la más reciente a la más antigua.
+- Las notas cambian de tamaño según su contenido y usan tonos opacos.
+- Si el contenido completo de una nota es una URL segura, al tocarla abre la página.

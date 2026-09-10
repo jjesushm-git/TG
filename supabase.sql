@@ -18,6 +18,9 @@ create table if not exists public.notes (
 );
 create index if not exists idx_ponds_user on public.ponds(user_id);
 create index if not exists idx_notes_user_pond on public.notes(user_id,pond_id);
+update public.ponds
+set name = 'Pizarra ' || substring(name from 8)
+where name ~* '^Charco ';
 revoke all on table public.ponds from anon;
 revoke all on table public.notes from anon;
 grant select, insert, update, delete on table public.ponds to authenticated;

@@ -4,11 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#063b68">
-  <meta name="description" content="Tus notas nadan en charcos personales.">
+  <meta name="description" content="Tus notas organizadas en pizarras personales.">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="aquarium.css">
+  <link rel="stylesheet" href="notes-v116.css">
   <title>TableroGO</title>
 </head>
 <body>
@@ -24,7 +25,7 @@
         <button class="primary" type="submit">Entrar</button>
       </form>
       <button id="registerBtn" class="text-btn">Crear cuenta</button>
-      <button id="demoBtn" class="demo-btn">Probar en este dispositivo</button>
+      <button id="demoBtn" class="hidden" aria-hidden="true" tabindex="-1">Probar en este dispositivo</button>
       <small id="authHelp">Configura Supabase para sincronizar entre dispositivos.</small>
     </div>
   </section>
@@ -33,7 +34,7 @@
     <header>
       <button id="homeBtn" class="brand">🎓 <span>TableroGO</span></button>
       <div class="pond-control">
-        <button id="singlePondBtn" class="pond-pill">Mi charco</button>
+        <button id="singlePondBtn" class="pond-pill">Mi pizarra</button>
         <label id="pondSelectWrap" class="hidden"><span class="sr-only">Seleccionar charco</span><select id="pondSelect"></select></label>
       </div>
     </header>
@@ -45,7 +46,7 @@
       <p>Cada idea se coloca en tu pizarrón personal.</p>
       <div class="home-actions">
         <button id="newNoteBtn" class="menu-card"><b>＋</b><span>Nueva nota</span></button>
-        <button id="myPondBtn" class="menu-card"><b>🐡</b><span>Mi charco</span></button>
+        <button id="myPondBtn" class="menu-card"><b>📌</b><span>Mi pizarra</span></button>
         <button id="settingsBtn" class="menu-card"><b>⚙️</b><span>Ajustes</span></button>
       </div>
     </section>
@@ -56,7 +57,7 @@
       <div class="reef reef-left">♒</div><div class="reef reef-right">♒</div>
       <div id="fishTank" class="fish-tank"></div>
       <div class="sand"><span>◌</span><span>◇</span><span>◌</span></div>
-      <div id="emptyPond" class="empty-pond hidden"><b>Este charco está tranquilo</b><span>Crea una nota para ver tu primer pez.</span></div>
+      <div id="emptyPond" class="empty-pond hidden"><b>La pizarra está vacía</b><span>Crea una nota para colocarla aquí.</span></div>
       <button id="pondAddBtn" class="fab" aria-label="Nueva nota">＋</button>
     </section>
   </main>
@@ -76,16 +77,16 @@
       <button type="button" class="x" data-close="viewDialog">×</button>
       <h2 id="viewTitle"></h2><p id="viewBody"></p><time id="viewDate"></time>
       <div class="modal-actions">
-        <button id="editNoteBtn">Editar</button><button id="moveNoteBtn">Mover a charco</button>
+        <button id="editNoteBtn">Editar</button><button id="moveNoteBtn">Mover a pizarra</button>
         <button data-close="viewDialog">Cerrar</button><button id="deleteNoteBtn" class="danger">Borrar</button>
       </div>
     </div>
   </dialog>
 
-  <dialog id="moveDialog" class="bubble-dialog"><div><button class="x" data-close="moveDialog">×</button><h2>Mover a charco</h2><select id="moveSelect"></select><button id="confirmMoveBtn" class="primary">Mover</button></div></dialog>
+  <dialog id="moveDialog" class="bubble-dialog"><div><button class="x" data-close="moveDialog">×</button><h2>Mover a pizarra</h2><select id="moveSelect"></select><button id="confirmMoveBtn" class="primary">Mover</button></div></dialog>
   <dialog id="confirmDialog" class="bubble-dialog"><div><h2>¿Borrar esta nota?</h2><p>Esta acción no se puede deshacer.</p><div class="modal-actions"><button data-close="confirmDialog">Regresar</button><button id="confirmDeleteBtn" class="danger">Sí, borrar</button></div></div></dialog>
-  <dialog id="settingsDialog" class="bubble-dialog"><div><button class="x" data-close="settingsDialog">×</button><h2>Ajustes</h2><div class="setting-row"><span>Versión</span><b>1.1.2</b></div><div class="setting-row"><span>Notas en este charco</span><b id="noteTotal">0 / 15</b></div><label>Fondo de la pecera<select id="backgroundSelect"><option value="ocean">Océano claro</option><option value="haunted">Barco embrujado</option></select></label><button id="addPondBtn" class="primary">＋ Agregar charco</button><div id="pondList" class="pond-list"></div><button id="installBtn" class="secondary hidden">Instalar aplicación</button><button id="logoutBtn" class="text-btn">Cerrar sesión</button></div></dialog>
-  <dialog id="pondDialog" class="bubble-dialog"><form id="pondForm" method="dialog"><button class="x" data-close="pondDialog">×</button><h2>Nuevo charco</h2><label>Nombre<input id="pondName" maxlength="20" required placeholder="Ejemplo: Trabajo"></label><small>Se guardará como “Charco Trabajo”.</small><button class="primary" type="submit">Crear charco</button></form></dialog>
+  <dialog id="settingsDialog" class="bubble-dialog"><div><button class="x" data-close="settingsDialog">×</button><h2>Ajustes</h2><div class="setting-row"><span>Versión</span><b>1.1.6</b></div><div class="setting-row"><span>Notas en esta pizarra</span><b id="noteTotal">0 / 15</b></div><button id="addPondBtn" class="primary">＋ Agregar pizarra</button><div id="pondList" class="pond-list"></div><button id="installBtn" class="secondary hidden">Instalar aplicación</button><button id="logoutBtn" class="text-btn">Cerrar sesión</button></div></dialog>
+  <dialog id="pondDialog" class="bubble-dialog"><form id="pondForm" method="dialog"><button class="x" data-close="pondDialog">×</button><h2>Nueva pizarra</h2><label>Nombre<input id="pondName" maxlength="20" required placeholder="Ejemplo: Trabajo"></label><small>Se guardará como “Pizarra Trabajo”.</small><button class="primary" type="submit">Crear pizarra</button></form></dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script><script src="app.js"></script><script src="aquarium.js"></script>

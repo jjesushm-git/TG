@@ -1,0 +1,9 @@
+.fish-tank.notes-board{align-items:start}
+.board-note{align-self:start;min-height:0!important;background:var(--paper)!important;padding:27px 13px 13px!important}
+.board-note.small{min-height:92px!important}
+.board-note.medium{min-height:136px!important}
+.board-note.large{min-height:180px!important}
+.note-preview{display:-webkit-box;margin-top:9px;overflow:hidden;-webkit-line-clamp:4;-webkit-box-orient:vertical;font-size:.78rem;line-height:1.35;color:#445149}
+.board-note.is-link{outline:2px dashed #536f68;outline-offset:-7px}
+.board-note.is-link .note-preview{font-weight:900;text-decoration:underline}
+.note-hit{width:100%;border:0;background:transparent;color:inherit;font:inherit;padding:0;cursor:pointer}.note-hit strong{display:block}.note-hit time{display:block}.note-manage{position:absolute;z-index:3;right:7px;top:7px;width:29px;height:29px;border:0;border-radius:50%;background:#31483f;color:#fff;font-size:1.2rem;line-height:1}
