@@ -1,4 +1,4 @@
-# Gopionline v1.0.0
+# Gopionline v1.1.2
 
 PWA de notas con acuario animado. Funciona en modo local inmediatamente; para cuentas y sincronización usa GitHub Pages + Supabase.
 
@@ -22,3 +22,6 @@ Sube todos los archivos a la raíz del repositorio. En **Settings > Pages**, sel
 - Charcos manuales con prefijo “Charco”.
 - Edición, movimiento, borrado con confirmación y fecha/hora.
 - Cada usuario solo puede consultar y modificar sus propios registros mediante RLS.
+- Desliza verticalmente o usa la rueda para girar la pecera cilíndrica.
+- Los peces pueden atravesarse; al empalmarse aceleran horizontalmente.
+- Fondos seleccionables: Océano claro y Barco embrujado.

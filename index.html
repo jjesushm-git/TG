@@ -8,6 +8,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="aquarium.css">
   <title>Gopionline</title>
 </head>
 <body>
@@ -50,6 +51,7 @@
     </section>
 
     <section id="pondView" class="screen pond-screen hidden" aria-label="Acuario de notas">
+      <div class="turn-hint">↕ Desliza para girar la pecera</div>
       <div class="water-rays"></div><div id="bubbles"></div>
       <div class="reef reef-left">♒</div><div class="reef reef-right">♒</div>
       <div id="fishTank" class="fish-tank"></div>
@@ -82,10 +84,10 @@
 
   <dialog id="moveDialog" class="bubble-dialog"><div><button class="x" data-close="moveDialog">×</button><h2>Mover a charco</h2><select id="moveSelect"></select><button id="confirmMoveBtn" class="primary">Mover</button></div></dialog>
   <dialog id="confirmDialog" class="bubble-dialog"><div><h2>¿Borrar esta nota?</h2><p>Esta acción no se puede deshacer.</p><div class="modal-actions"><button data-close="confirmDialog">Regresar</button><button id="confirmDeleteBtn" class="danger">Sí, borrar</button></div></div></dialog>
-  <dialog id="settingsDialog" class="bubble-dialog"><div><button class="x" data-close="settingsDialog">×</button><h2>Ajustes</h2><div class="setting-row"><span>Versión</span><b>1.0.0</b></div><div class="setting-row"><span>Notas en este charco</span><b id="noteTotal">0 / 15</b></div><button id="addPondBtn" class="primary">＋ Agregar charco</button><div id="pondList" class="pond-list"></div><button id="installBtn" class="secondary hidden">Instalar aplicación</button><button id="logoutBtn" class="text-btn">Cerrar sesión</button></div></dialog>
+  <dialog id="settingsDialog" class="bubble-dialog"><div><button class="x" data-close="settingsDialog">×</button><h2>Ajustes</h2><div class="setting-row"><span>Versión</span><b>1.1.2</b></div><div class="setting-row"><span>Notas en este charco</span><b id="noteTotal">0 / 15</b></div><label>Fondo de la pecera<select id="backgroundSelect"><option value="ocean">Océano claro</option><option value="haunted">Barco embrujado</option></select></label><button id="addPondBtn" class="primary">＋ Agregar charco</button><div id="pondList" class="pond-list"></div><button id="installBtn" class="secondary hidden">Instalar aplicación</button><button id="logoutBtn" class="text-btn">Cerrar sesión</button></div></dialog>
   <dialog id="pondDialog" class="bubble-dialog"><form id="pondForm" method="dialog"><button class="x" data-close="pondDialog">×</button><h2>Nuevo charco</h2><label>Nombre<input id="pondName" maxlength="20" required placeholder="Ejemplo: Trabajo"></label><small>Se guardará como “Charco Trabajo”.</small><button class="primary" type="submit">Crear charco</button></form></dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="config.js"></script><script src="app.js"></script>
+  <script src="config.js"></script><script src="app.js"></script><script src="aquarium.js"></script>
 </body>
 </html>
