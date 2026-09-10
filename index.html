@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#063b68">
+  <meta name="description" content="Tus notas nadan en charcos personales.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <title>Gopionline</title>
+</head>
+<body>
+  <div id="toast" class="toast" role="status"></div>
+  <section id="authView" class="auth-view">
+    <div class="auth-card">
+      <div class="brand-mark">🐠</div>
+      <h1>Gopionline</h1>
+      <p>Un charco tranquilo para tus ideas.</p>
+      <form id="authForm">
+        <label>Correo<input id="email" type="email" autocomplete="email" required placeholder="tu@correo.com"></label>
+        <label>Contraseña<input id="password" type="password" minlength="6" autocomplete="current-password" required placeholder="Mínimo 6 caracteres"></label>
+        <button class="primary" type="submit">Entrar</button>
+      </form>
+      <button id="registerBtn" class="text-btn">Crear cuenta</button>
+      <button id="demoBtn" class="demo-btn">Probar en este dispositivo</button>
+      <small id="authHelp">Configura Supabase para sincronizar entre dispositivos.</small>
+    </div>
+  </section>
+
+  <main id="appView" class="hidden">
+    <header>
+      <button id="homeBtn" class="brand">🐠 <span>Gopionline</span></button>
+      <div class="pond-control">
+        <button id="singlePondBtn" class="pond-pill">Mi charco</button>
+        <label id="pondSelectWrap" class="hidden"><span class="sr-only">Seleccionar charco</span><select id="pondSelect"></select></label>
+      </div>
+    </header>
+
+    <section id="homeView" class="screen home-screen">
+      <div class="hero-bubbles"><i></i><i></i><i></i><i></i></div>
+      <div class="hero-fish">🐟</div>
+      <h2>¿Qué idea quieres soltar hoy?</h2>
+      <p>Cada nota se convierte en un pez dentro de tu charco.</p>
+      <div class="home-actions">
+        <button id="newNoteBtn" class="menu-card"><b>＋</b><span>Nueva nota</span></button>
+        <button id="myPondBtn" class="menu-card"><b>🐡</b><span>Mi charco</span></button>
+        <button id="settingsBtn" class="menu-card"><b>⚙️</b><span>Ajustes</span></button>
+      </div>
+    </section>
+
+    <section id="pondView" class="screen pond-screen hidden" aria-label="Acuario de notas">
+      <div class="water-rays"></div><div id="bubbles"></div>
+      <div class="reef reef-left">♒</div><div class="reef reef-right">♒</div>
+      <div id="fishTank" class="fish-tank"></div>
+      <div class="sand"><span>◌</span><span>◇</span><span>◌</span></div>
+      <div id="emptyPond" class="empty-pond hidden"><b>Este charco está tranquilo</b><span>Crea una nota para ver tu primer pez.</span></div>
+      <button id="pondAddBtn" class="fab" aria-label="Nueva nota">＋</button>
+    </section>
+  </main>
+
+  <dialog id="noteDialog" class="bubble-dialog">
+    <form id="noteForm" method="dialog">
+      <button type="button" class="x" data-close="noteDialog">×</button>
+      <h2 id="noteFormTitle">Nueva nota</h2>
+      <label>Título <span id="titleCount">0/18</span><input id="noteTitle" maxlength="18" required placeholder="Un título corto"></label>
+      <label>Nota <span id="noteCount">0/500</span><textarea id="noteBody" maxlength="500" required placeholder="Escribe aquí tu idea..."></textarea></label>
+      <button class="primary" type="submit">Guardar</button>
+    </form>
+  </dialog>
+
+  <dialog id="viewDialog" class="bubble-dialog note-bubble">
+    <div>
+      <button type="button" class="x" data-close="viewDialog">×</button>
+      <h2 id="viewTitle"></h2><p id="viewBody"></p><time id="viewDate"></time>
+      <div class="modal-actions">
+        <button id="editNoteBtn">Editar</button><button id="moveNoteBtn">Mover a charco</button>
+        <button data-close="viewDialog">Cerrar</button><button id="deleteNoteBtn" class="danger">Borrar</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="moveDialog" class="bubble-dialog"><div><button class="x" data-close="moveDialog">×</button><h2>Mover a charco</h2><select id="moveSelect"></select><button id="confirmMoveBtn" class="primary">Mover</button></div></dialog>
+  <dialog id="confirmDialog" class="bubble-dialog"><div><h2>¿Borrar esta nota?</h2><p>Esta acción no se puede deshacer.</p><div class="modal-actions"><button data-close="confirmDialog">Regresar</button><button id="confirmDeleteBtn" class="danger">Sí, borrar</button></div></div></dialog>
+  <dialog id="settingsDialog" class="bubble-dialog"><div><button class="x" data-close="settingsDialog">×</button><h2>Ajustes</h2><div class="setting-row"><span>Versión</span><b>1.0.0</b></div><div class="setting-row"><span>Notas en este charco</span><b id="noteTotal">0 / 15</b></div><button id="addPondBtn" class="primary">＋ Agregar charco</button><div id="pondList" class="pond-list"></div><button id="installBtn" class="secondary hidden">Instalar aplicación</button><button id="logoutBtn" class="text-btn">Cerrar sesión</button></div></dialog>
+  <dialog id="pondDialog" class="bubble-dialog"><form id="pondForm" method="dialog"><button class="x" data-close="pondDialog">×</button><h2>Nuevo charco</h2><label>Nombre<input id="pondName" maxlength="20" required placeholder="Ejemplo: Trabajo"></label><small>Se guardará como “Charco Trabajo”.</small><button class="primary" type="submit">Crear charco</button></form></dialog>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script><script src="app.js"></script>
+</body>
+</html>
