@@ -1,4 +1,4 @@
-# Gopionline v1.1.3
+# TableroGO v1.1.5
 
 PWA de notas con acuario animado. Funciona en modo local inmediatamente; para cuentas y sincronización usa GitHub Pages + Supabase.
 
@@ -27,3 +27,5 @@ Sube todos los archivos a la raíz del repositorio. En **Settings > Pages**, sel
 - Fondos seleccionables: Océano claro y Barco embrujado.
 - Perspectiva de cámara de 360°: los peces salen del campo visual por los lados y conservan profundidad propia.
 - Atrás en Android cierra primero modales, después vuelve al menú y desde el menú cierra la sesión.
+- Mi charco ahora es un pizarrón escolar sin animaciones ni físicas.
+- Las notas aparecen ordenadas de la más reciente a la más antigua.

@@ -18,6 +18,10 @@ create table if not exists public.notes (
 );
 create index if not exists idx_ponds_user on public.ponds(user_id);
 create index if not exists idx_notes_user_pond on public.notes(user_id,pond_id);
+revoke all on table public.ponds from anon;
+revoke all on table public.notes from anon;
+grant select, insert, update, delete on table public.ponds to authenticated;
+grant select, insert, update, delete on table public.notes to authenticated;
 alter table public.ponds enable row level security;
 alter table public.notes enable row level security;
 drop policy if exists "ponds_owner_all" on public.ponds;
