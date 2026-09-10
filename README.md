@@ -1,4 +1,4 @@
-# Gopionline v1.1.2
+# Gopionline v1.1.3
 
 PWA de notas con acuario animado. Funciona en modo local inmediatamente; para cuentas y sincronización usa GitHub Pages + Supabase.
 
@@ -25,3 +25,5 @@ Sube todos los archivos a la raíz del repositorio. En **Settings > Pages**, sel
 - Desliza verticalmente o usa la rueda para girar la pecera cilíndrica.
 - Los peces pueden atravesarse; al empalmarse aceleran horizontalmente.
 - Fondos seleccionables: Océano claro y Barco embrujado.
+- Perspectiva de cámara de 360°: los peces salen del campo visual por los lados y conservan profundidad propia.
+- Atrás en Android cierra primero modales, después vuelve al menú y desde el menú cierra la sesión.
