@@ -18,6 +18,8 @@ Abre **SQL Editor > New query**, copia todo el contenido de `supabase.sql`, puls
 
 Desde la versión 1.1.8 debes ejecutar nuevamente el archivo completo. Es seguro repetirlo y activará la tabla `messages` en Supabase Realtime para recibir mensajes sin salir de la pantalla.
 
+Para la versión 1.1.10 vuelve a ejecutarlo una vez: agrega la edición y eliminación segura de mensajes propios. No borra las conversaciones existentes.
+
 Si aparece un error indicando que `pg_cron` no está disponible, entra en **Database > Extensions**, busca `pg_cron`, actívalo y vuelve a ejecutar el archivo.
 
 ## 3. Configurar las cuentas

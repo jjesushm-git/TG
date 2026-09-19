@@ -46,7 +46,7 @@ async function openUsers(){
 $("#usersBtn").onclick=()=>{$("#settingsDialog").close();openUsers()};
 
 // Mensajería
-let activeRecipient="",messageChannel=null,messagePoll=null,messageBusy=false,messageSignature="";
+let activeRecipient="",messageChannel=null,messagePoll=null,messageBusy=false,messageSignature="",messageCache=[],editingMessageId="";
 const isTransferNow=value=>/^https?:\/\/(?:www\.)?transfernow\.net\//i.test(value.trim());
 async function loadRecipients(){
   const {data,error}=await sb.from("profiles").select("id,email").eq("status","approved").neq("id",state.user.id).order("email");
@@ -57,21 +57,32 @@ async function loadMessages(force=false){
   if(!activeRecipient||messageBusy)return false;messageBusy=true;const me=state.user.id;
   const filter=`and(sender_id.eq.${me},recipient_id.eq.${activeRecipient}),and(sender_id.eq.${activeRecipient},recipient_id.eq.${me})`;
   const {data,error}=await sb.from("messages").select("*").or(filter).order("created_at",{ascending:true}).limit(200);messageBusy=false;if(error){toast(error.message);return false}
-  const signature=data.map(m=>m.id).join("|");if(!force&&signature===messageSignature)return true;messageSignature=signature;
-  const box=$("#messageList");box.innerHTML=data.map(m=>{const file=isTransferNow(m.body);return `<article class="message ${m.sender_id===me?"mine":""}">${file?`<a class="transfer-message" href="${escapeHtml(m.body)}" target="_blank" rel="noopener noreferrer">📎 Archivo en TransferNow<br><small>Disponible temporalmente · Abrir o descargar</small></a>`:`<span>${escapeHtml(m.body)}</span>`}<time>${stamp(m.created_at)}</time></article>`}).join("")||"<p class='muted'>Aún no hay mensajes.</p>";box.scrollTop=box.scrollHeight
+  const signature=data.map(m=>`${m.id}:${m.updated_at||""}:${m.body}`).join("|");if(!force&&signature===messageSignature)return true;messageSignature=signature;
+  messageCache=data;const box=$("#messageList");box.innerHTML=data.map(m=>{const file=isTransferNow(m.body),mine=m.sender_id===me,content=file?`<a class="transfer-message" href="${escapeHtml(m.body)}" target="_blank" rel="noopener noreferrer">📎 Archivo en TransferNow<br><small>Disponible temporalmente · Abrir o descargar</small></a>`:`<span>${escapeHtml(m.body)}</span>`,edited=m.updated_at&&new Date(m.updated_at)>new Date(m.created_at);return `<div class="message-line ${mine?"mine-line":""}">${mine?`<button class="message-tool pencil-tool" data-edit-message="${m.id}" aria-label="Editar mensaje" title="Editar mensaje">✏️</button>`:""}<article class="message ${mine?"mine":""}" data-message-card="${m.id}">${content}<time>${stamp(m.created_at)}${edited?" · editado":""}</time></article>${mine?`<button class="message-tool trash-tool" data-delete-message="${m.id}" aria-label="Borrar mensaje" title="Borrar mensaje">🗑️</button>`:""}</div>`}).join("")||"<p class='muted'>Aún no hay mensajes.</p>";
+  $$('[data-edit-message]').forEach(button=>button.onclick=()=>openMessageEditor(button.dataset.editMessage));
+  $$('[data-delete-message]').forEach(button=>button.onclick=()=>deleteMessage(button.dataset.deleteMessage,button));box.scrollTop=box.scrollHeight
   return true
 }
 function activePair(message){const me=state.user?.id;return activeRecipient&&((message.sender_id===me&&message.recipient_id===activeRecipient)||(message.sender_id===activeRecipient&&message.recipient_id===me))}
 function startMessageUpdates(){
   if(!cloud||!state.user)return;
-  if(!messageChannel)messageChannel=sb.channel(`tablerogo-messages-${state.user.id}`).on("postgres_changes",{event:"INSERT",schema:"public",table:"messages"},payload=>{if(activePair(payload.new)&&!$("#messagesView").classList.contains("hidden"))loadMessages(true)}).subscribe();
+  if(!messageChannel)messageChannel=sb.channel(`tablerogo-messages-${state.user.id}`).on("postgres_changes",{event:"*",schema:"public",table:"messages"},()=>{if(!$("#messagesView").classList.contains("hidden"))loadMessages(true)}).subscribe();
   if(!messagePoll)messagePoll=setInterval(()=>{if(!$("#messagesView").classList.contains("hidden")&&document.visibilityState==="visible")loadMessages()},2000)
 }
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&!$("#messagesView").classList.contains("hidden"))loadMessages(true)});
 window.addEventListener("focus",()=>{if(!$("#messagesView").classList.contains("hidden"))loadMessages(true)});
 $("#messageRecipient").onchange=async e=>{activeRecipient=e.target.value;messageSignature="";await loadMessages(true)};
-$("#refreshMessagesBtn").onclick=async()=>{if(!activeRecipient)return toast("Selecciona un usuario");const button=$("#refreshMessagesBtn");button.disabled=true;button.classList.add("refreshing");const updated=await loadMessages(true);button.classList.remove("refreshing");button.disabled=false;if(updated)toast("Mensajes actualizados")};
 $("#messageForm").onsubmit=async e=>{e.preventDefault();const body=$("#messageBody").value.trim();if(!activeRecipient)return toast("Selecciona un usuario");const {error}=await sb.from("messages").insert({sender_id:state.user.id,recipient_id:activeRecipient,body});if(error)return toast(error.message);$("#messageBody").value="";await loadMessages()};
+function openMessageEditor(id){const message=messageCache.find(item=>item.id===id&&item.sender_id===state.user.id);if(!message)return;editingMessageId=id;$("#editMessageBody").value=message.body;$("#editMessageDialog").showModal();$("#editMessageBody").focus()}
+$("#editMessageForm").onsubmit=async e=>{e.preventDefault();const body=$("#editMessageBody").value.trim();if(!body||!editingMessageId)return;const {error}=await sb.from("messages").update({body,updated_at:new Date().toISOString()}).eq("id",editingMessageId).eq("sender_id",state.user.id);if(error)return toast(error.message);$("#editMessageDialog").close();editingMessageId="";messageSignature="";await loadMessages(true);toast("Mensaje editado")};
+async function paperBasketAnimation(card,trash){
+  if(!card||!trash||matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+  const from=card.getBoundingClientRect(),to=trash.getBoundingClientRect(),paper=document.createElement("div");paper.className="crumpled-paper";paper.textContent="📄";paper.style.left=`${from.left+from.width/2-22}px`;paper.style.top=`${from.top+from.height/2-22}px`;document.body.appendChild(paper);card.style.visibility="hidden";
+  await paper.animate([{transform:"scale(1) rotate(0)",borderRadius:"5px"},{transform:"scale(.55) rotate(220deg)",borderRadius:"50%"}],{duration:320,easing:"ease-in",fill:"forwards"}).finished;
+  const dx=to.left+to.width/2-(from.left+from.width/2),dy=to.top+to.height/2-(from.top+from.height/2);
+  await paper.animate([{transform:"translate(0,0) scale(.55) rotate(220deg)"},{transform:`translate(${dx*.5}px,${dy*.5-90}px) scale(.45) rotate(560deg)`},{transform:`translate(${dx}px,${dy}px) scale(.18) rotate(900deg)`,opacity:.2}],{duration:650,easing:"cubic-bezier(.25,.7,.45,1)",fill:"forwards"}).finished;paper.remove()
+}
+async function deleteMessage(id,trash){const message=messageCache.find(item=>item.id===id&&item.sender_id===state.user.id);if(!message||!confirm("¿Borrar este mensaje?"))return;const line=trash.closest(".message-line"),card=line?.querySelector("[data-message-card]");await paperBasketAnimation(card,trash);const {error}=await sb.from("messages").delete().eq("id",id).eq("sender_id",state.user.id);if(error){if(card)card.style.visibility="";return toast(error.message)}line?.remove();messageCache=messageCache.filter(item=>item.id!==id);messageSignature="";toast("Mensaje encestado en el bote")}
 
 // Códigos QR (Texto, URL y TransferNow manual)
 const QR_STORE="tablerogo.qr.v1",QR_DAY=86400000;

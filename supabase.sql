@@ -110,14 +110,21 @@ create table if not exists public.messages (
   created_at timestamptz not null default now(),
   read_at timestamptz
 );
+alter table public.messages add column if not exists updated_at timestamptz;
+alter table public.messages replica identity full;
 create index if not exists idx_messages_pair on public.messages(sender_id,recipient_id,created_at);
 alter table public.messages enable row level security;
 drop policy if exists "messages_read" on public.messages;
 create policy "messages_read" on public.messages for select to authenticated using (public.is_approved() and (sender_id=auth.uid() or recipient_id=auth.uid()));
 drop policy if exists "messages_send" on public.messages;
 create policy "messages_send" on public.messages for insert to authenticated with check (public.is_approved() and sender_id=auth.uid() and exists(select 1 from public.profiles where id=recipient_id and status='approved'));
+drop policy if exists "messages_update_own" on public.messages;
+create policy "messages_update_own" on public.messages for update to authenticated using (public.is_approved() and sender_id=auth.uid()) with check (public.is_approved() and sender_id=auth.uid());
+drop policy if exists "messages_delete_own" on public.messages;
+create policy "messages_delete_own" on public.messages for delete to authenticated using (public.is_approved() and sender_id=auth.uid());
 revoke all on table public.messages from anon;
-grant select,insert on table public.messages to authenticated;
+grant select,insert,delete on table public.messages to authenticated;
+grant update(body,updated_at) on table public.messages to authenticated;
 
 -- Activa mensajes en tiempo real. El bloque es seguro al ejecutar el SQL más de una vez.
 do $$ begin
