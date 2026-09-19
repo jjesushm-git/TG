@@ -37,11 +37,15 @@ create policy "notes_owner_all" on public.notes for all using (auth.uid()=user_i
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   email text not null,
+  nickname varchar(10),
+  display_name_mode text not null default 'email' check (display_name_mode in ('email','nickname')),
   role text not null default 'user' check (role in ('admin','user')),
   status text not null default 'pending' check (status in ('pending','approved','revoked')),
   created_at timestamptz not null default now(),
   approved_at timestamptz
 );
+alter table public.profiles add column if not exists nickname varchar(10);
+alter table public.profiles add column if not exists display_name_mode text not null default 'email';
 
 create or replace function public.is_admin()
 returns boolean language sql stable security definer set search_path=public
@@ -80,8 +84,13 @@ alter table public.profiles enable row level security;
 drop policy if exists "profiles_visible" on public.profiles;
 create policy "profiles_visible" on public.profiles for select to authenticated
 using (id=auth.uid() or public.is_admin() or (status='approved' and public.is_approved()));
+drop policy if exists "profiles_update_identity" on public.profiles;
+create policy "profiles_update_identity" on public.profiles for update to authenticated
+using (id=auth.uid() and public.is_approved())
+with check (id=auth.uid() and public.is_approved() and display_name_mode in ('email','nickname') and (nickname is null or char_length(nickname) between 1 and 10));
 revoke all on table public.profiles from anon;
 grant select on table public.profiles to authenticated;
+grant update(nickname,display_name_mode) on table public.profiles to authenticated;
 
 create or replace function public.approve_users(user_ids uuid[])
 returns void language plpgsql security definer set search_path=public

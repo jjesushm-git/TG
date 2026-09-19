@@ -2,7 +2,7 @@
 let currentProfile=null;
 
 window.authorizeCurrentUser=async function(){
-  const {data,error}=await sb.from("profiles").select("id,email,role,status,created_at").eq("id",state.user.id).single();
+  const {data,error}=await sb.from("profiles").select("id,email,nickname,display_name_mode,role,status,created_at").eq("id",state.user.id).single();
   if(error){toast("Ejecuta el archivo supabase.sql actualizado");await sb.auth.signOut();state.user=null;return false}
   currentProfile=data;
   if(data.status!=="approved"){
@@ -18,6 +18,19 @@ $("#settingsBtn").onclick=()=>{originalSettingsClick?.();$("#adminSettings").cla
 $("#qrBtn").onclick=()=>{resetQrChooser();showScreen("qrView");showQrTab("create")};
 $("#messagesBtn").onclick=async()=>{showScreen("messagesView");startMessageUpdates();await loadRecipients()};
 $$('[data-feature-home]').forEach(button=>button.onclick=()=>showScreen("homeView"));
+
+// Identidad visible y modo de visualización
+const VIEW_MODE_KEY="tablerogo.viewMode";
+function applyViewMode(mode){const selected=mode==="desktop"?"desktop":"mobile";document.body.classList.toggle("desktop-view",selected==="desktop");localStorage.setItem(VIEW_MODE_KEY,selected)}
+applyViewMode(localStorage.getItem(VIEW_MODE_KEY)||"mobile");
+function chosenName(profile){return profile?.display_name_mode==="nickname"&&profile.nickname?profile.nickname:profile?.email||"Usuario"}
+function syncNicknameField(){const custom=$('input[name="displayNameMode"]:checked')?.value==="nickname";$("#nicknameField").classList.toggle("muted-field",!custom);$("#nicknameInput").disabled=!custom;$("#nicknameInput").required=custom}
+$("#nicknameBtn").onclick=()=>{$("#settingsDialog").close();const mode=currentProfile?.display_name_mode==="nickname"?"nickname":"email";$(`input[name="displayNameMode"][value="${mode}"]`).checked=true;$("#nicknameInput").value=currentProfile?.nickname||"";$("#nicknameCount").textContent=`${$("#nicknameInput").value.length}/10`;syncNicknameField();$("#nicknameDialog").showModal()};
+$$('input[name="displayNameMode"]').forEach(radio=>radio.onchange=syncNicknameField);
+$("#nicknameInput").oninput=e=>$("#nicknameCount").textContent=`${e.target.value.length}/10`;
+$("#nicknameForm").onsubmit=async e=>{e.preventDefault();const mode=$('input[name="displayNameMode"]:checked')?.value||"email",nickname=$("#nicknameInput").value.trim();if(mode==="nickname"&&(nickname.length<1||nickname.length>10))return toast("El apodo debe tener entre 1 y 10 caracteres");const {error}=await sb.from("profiles").update({display_name_mode:mode,nickname:nickname||null}).eq("id",state.user.id);if(error)return toast(error.message);currentProfile={...currentProfile,display_name_mode:mode,nickname:nickname||null};$("#nicknameDialog").close();toast("Nombre visible guardado")};
+$("#displayModeBtn").onclick=()=>{$("#settingsDialog").close();const mode=localStorage.getItem(VIEW_MODE_KEY)==="desktop"?"desktop":"mobile";$(`input[name="viewMode"][value="${mode}"]`).checked=true;$("#displayModeDialog").showModal()};
+$("#displayModeForm").onsubmit=e=>{e.preventDefault();applyViewMode($('input[name="viewMode"]:checked')?.value);$("#displayModeDialog").close();toast("Visualización aplicada")};
 
 // Administración de cuentas
 function userRow(profile,checkbox=false){
@@ -51,8 +64,8 @@ const isTransferNow=value=>/^https?:\/\/(?:www\.)?transfernow\.net\//i.test(valu
 const lastChatKey=()=>`tablerogo.lastChat.${state.user?.id||""}`;
 const isRecess=()=>activeRecipient==="__recreo__";
 async function loadRecipients(){
-  const {data,error}=await sb.from("profiles").select("id,email").eq("status","approved").neq("id",state.user.id).order("email");
-  if(error)return toast(error.message);profileEmails=new Map(data.map(p=>[p.id,p.email]));profileEmails.set(state.user.id,currentProfile?.email||state.user.email||"Yo");const select=$("#messageRecipient"),saved=localStorage.getItem(lastChatKey());select.innerHTML=`<option value="__recreo__">🏫 Recreo · chat de todos</option>`+data.map(p=>`<option value="${p.id}">${escapeHtml(p.email)}</option>`).join("");
+  const {data,error}=await sb.from("profiles").select("id,email,nickname,display_name_mode").eq("status","approved").neq("id",state.user.id).order("email");
+  if(error)return toast(error.message);profileEmails=new Map(data.map(p=>[p.id,chosenName(p)]));profileEmails.set(state.user.id,chosenName(currentProfile));const select=$("#messageRecipient"),saved=localStorage.getItem(lastChatKey());select.innerHTML=`<option value="__recreo__">🏫 Recreo · chat de todos</option>`+data.map(p=>`<option value="${p.id}">${escapeHtml(chosenName(p))}</option>`).join("");
   select.value=["__recreo__",...data.map(p=>p.id)].includes(saved)?saved:"__recreo__";activeRecipient=select.value;messageSignature="";await loadMessages(true)
 }
 async function loadMessages(force=false){
@@ -85,9 +98,11 @@ async function paperBasketAnimation(card,trash){
   const sheet=stage.querySelector(".tear-note"),bin=stage.querySelector(".basket-bin");sheet.textContent=card.innerText.replace(/\s+/g," ").slice(0,160);document.body.appendChild(stage);card.style.visibility="hidden";
   await sheet.animate([{transform:"translate(-50%,-50%) scale(.25)",opacity:0},{transform:"translate(-50%,-50%) scale(1)",opacity:1}],{duration:450,easing:"ease-out",fill:"forwards"}).finished;
   await sheet.animate([{clipPath:"polygon(0 0,100% 0,100% 100%,0 100%)",transform:"translate(-50%,-50%) rotate(0)"},{clipPath:"polygon(0 0,100% 0,96% 88%,88% 94%,78% 87%,68% 96%,57% 88%,46% 96%,34% 87%,22% 95%,10% 88%,0 96%)",transform:"translate(-50%,-52%) rotate(-3deg)"}],{duration:650,easing:"ease-in-out",fill:"forwards"}).finished;
-  await sheet.animate([{transform:"translate(-50%,-52%) scale(1) rotate(-3deg)",borderRadius:"3px"},{transform:"translate(-50%,-50%) scale(.18) rotate(480deg)",borderRadius:"50%",filter:"drop-shadow(0 7px 5px #0007)"}],{duration:750,easing:"ease-in",fill:"forwards"}).finished;sheet.textContent="🗞️";sheet.classList.add("paper-ball");
-  const sheetBox=sheet.getBoundingClientRect(),binBox=bin.getBoundingClientRect(),dx=binBox.left+binBox.width/2-(sheetBox.left+sheetBox.width/2),dy=binBox.top+binBox.height*.35-(sheetBox.top+sheetBox.height/2);
-  await sheet.animate([{transform:"translate(-50%,-50%) scale(.18) rotate(480deg)"},{offset:.5,transform:`translate(calc(-50% + ${dx*.5}px),calc(-50% + ${dy*.25-150}px)) scale(.2) rotate(900deg)`},{offset:.82,transform:`translate(calc(-50% + ${dx*.82}px),calc(-50% + ${dy*.65-70}px)) scale(.16) rotate(1250deg)`},{transform:`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px)) scale(.08) rotate(1500deg)`,opacity:.15}],{duration:1450,easing:"cubic-bezier(.18,.65,.35,1)",fill:"forwards"}).finished;
+  await sheet.animate([{transform:"translate(-50%,-52%) scale(1) rotate(-3deg)",borderRadius:"3px"},{offset:.45,transform:"translate(-50%,-50%) scale(.58,.45) rotate(170deg)",borderRadius:"28%",filter:"contrast(1.15)"},{transform:"translate(-50%,-50%) scale(.16) rotate(620deg)",borderRadius:"50%",filter:"drop-shadow(0 7px 5px #0007)"}],{duration:1050,easing:"ease-in",fill:"forwards"}).finished;
+  const crushed=sheet.getBoundingClientRect(),ball=document.createElement("div");ball.className="paper-ball";ball.innerHTML='<i></i><i></i><i></i><i></i><i></i>';ball.style.left=`${crushed.left+crushed.width/2}px`;ball.style.top=`${crushed.top+crushed.height/2}px`;stage.appendChild(ball);sheet.remove();
+  await ball.animate([{transform:"translate(-50%,-50%) scale(.15) rotate(0deg)"},{offset:.55,transform:"translate(-50%,-50%) scale(1.16) rotate(80deg)"},{transform:"translate(-50%,-50%) scale(1) rotate(115deg)"}],{duration:480,easing:"ease-out",fill:"forwards"}).finished;
+  const ballBox=ball.getBoundingClientRect(),binBox=bin.getBoundingClientRect(),dx=binBox.left+binBox.width/2-(ballBox.left+ballBox.width/2),dy=binBox.top+binBox.height*.35-(ballBox.top+ballBox.height/2);
+  await ball.animate([{transform:"translate(-50%,-50%) scale(1) rotate(115deg)"},{offset:.5,transform:`translate(calc(-50% + ${dx*.5}px),calc(-50% + ${dy*.25-170}px)) scale(.92) rotate(620deg)`},{offset:.82,transform:`translate(calc(-50% + ${dx*.82}px),calc(-50% + ${dy*.65-75}px)) scale(.7) rotate(1040deg)`},{transform:`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px)) scale(.22) rotate(1380deg)`,opacity:.15}],{duration:1650,easing:"cubic-bezier(.18,.65,.35,1)",fill:"forwards"}).finished;
   await bin.animate([{transform:"scale(1)"},{transform:"scale(1.22) rotate(-5deg)"},{transform:"scale(1)"}],{duration:360}).finished;stage.remove()
 }
 async function deleteMessage(id,trash){const message=messageCache.find(item=>item.id===id&&item.sender_id===state.user.id);if(!message||!confirm("¿Borrar este mensaje?"))return;const line=trash.closest(".message-line"),card=line?.querySelector("[data-message-card]");await paperBasketAnimation(card,trash);const {error}=await sb.from("messages").delete().eq("id",id).eq("sender_id",state.user.id);if(error){if(card)card.style.visibility="";return toast(error.message)}line?.remove();messageCache=messageCache.filter(item=>item.id!==id);messageSignature="";toast("Mensaje encestado en el bote")}

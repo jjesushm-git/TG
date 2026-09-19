@@ -22,6 +22,8 @@ Para la versión 1.1.10 vuelve a ejecutarlo una vez: agrega la edición y elimin
 
 Para la versión 1.1.11 vuelve a ejecutarlo una vez. Añade el chat grupal `Recreo`, permite conservar los mensajes existentes y crea la función segura para borrar conversaciones.
 
+Para la versión 1.1.12 vuelve a ejecutarlo una vez. Añade a `profiles` las preferencias de correo/apodo y permite que cada usuario autorizado cambie únicamente su propia identidad visible. Los datos anteriores se conservan.
+
 Si aparece un error indicando que `pg_cron` no está disponible, entra en **Database > Extensions**, busca `pg_cron`, actívalo y vuelve a ejecutar el archivo.
 
 ## 3. Configurar las cuentas

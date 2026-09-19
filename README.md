@@ -1,4 +1,4 @@
-# TableroGO v1.1.11
+# TableroGO v1.1.12
 
 PWA escolar de notas, QR y mensajería privada con GitHub Pages + Supabase.
 
@@ -41,4 +41,7 @@ Sube todos los archivos a la raíz del repositorio. En **Settings > Pages**, sel
 - **Recreo** reúne a todas las cuentas autorizadas y admite mensajes y enlaces de archivos de TransferNow.
 - Mensajería recuerda la última conversación seleccionada en ese dispositivo.
 - Eliminación con animación escolar lenta a pantalla completa: hoja arrancada, hecha bola y lanzada al bote.
+- En **Ajustes > Apodo** cada usuario puede mostrar su correo o un apodo personalizado de hasta 10 caracteres en Mensajería.
+- En **Ajustes > Visualización** se puede elegir la vista adaptable para celular o una presentación panorámica de PC con proporción 16:9; la elección queda guardada en el dispositivo.
+- La animación de borrado forma una bola de papel irregular con pliegues y sombras antes de lanzarla al bote.
 - Al borrar, la hoja se arruga y sigue una trayectoria de básquet hacia el bote.
