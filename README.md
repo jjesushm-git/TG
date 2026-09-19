@@ -1,4 +1,4 @@
-# TableroGO v1.1.8
+# TableroGO v1.1.9
 
 PWA escolar de notas, QR y mensajería privada con GitHub Pages + Supabase.
 
@@ -35,3 +35,4 @@ Sube todos los archivos a la raíz del repositorio. En **Settings > Pages**, sel
 - Códigos QR siempre abre mostrando de nuevo las opciones Texto, URL y TransferNow.
 - Las notas del pizarrón usan tipografía Arial para facilitar la lectura.
 - Mensajería recibe nuevos mensajes mediante Supabase Realtime y verifica novedades cada dos segundos como respaldo.
+- Botón ↻ entre “Enviar archivo” y “Enviar” para actualizar manualmente la conversación.

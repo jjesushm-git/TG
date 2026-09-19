@@ -54,11 +54,12 @@ async function loadRecipients(){
   activeRecipient=select.value;messageSignature="";if(activeRecipient)await loadMessages(true);else $("#messageList").innerHTML="<p class='muted'>No hay otros usuarios autorizados.</p>"
 }
 async function loadMessages(force=false){
-  if(!activeRecipient||messageBusy)return;messageBusy=true;const me=state.user.id;
+  if(!activeRecipient||messageBusy)return false;messageBusy=true;const me=state.user.id;
   const filter=`and(sender_id.eq.${me},recipient_id.eq.${activeRecipient}),and(sender_id.eq.${activeRecipient},recipient_id.eq.${me})`;
-  const {data,error}=await sb.from("messages").select("*").or(filter).order("created_at",{ascending:true}).limit(200);messageBusy=false;if(error)return toast(error.message);
-  const signature=data.map(m=>m.id).join("|");if(!force&&signature===messageSignature)return;messageSignature=signature;
+  const {data,error}=await sb.from("messages").select("*").or(filter).order("created_at",{ascending:true}).limit(200);messageBusy=false;if(error){toast(error.message);return false}
+  const signature=data.map(m=>m.id).join("|");if(!force&&signature===messageSignature)return true;messageSignature=signature;
   const box=$("#messageList");box.innerHTML=data.map(m=>{const file=isTransferNow(m.body);return `<article class="message ${m.sender_id===me?"mine":""}">${file?`<a class="transfer-message" href="${escapeHtml(m.body)}" target="_blank" rel="noopener noreferrer">📎 Archivo en TransferNow<br><small>Disponible temporalmente · Abrir o descargar</small></a>`:`<span>${escapeHtml(m.body)}</span>`}<time>${stamp(m.created_at)}</time></article>`}).join("")||"<p class='muted'>Aún no hay mensajes.</p>";box.scrollTop=box.scrollHeight
+  return true
 }
 function activePair(message){const me=state.user?.id;return activeRecipient&&((message.sender_id===me&&message.recipient_id===activeRecipient)||(message.sender_id===activeRecipient&&message.recipient_id===me))}
 function startMessageUpdates(){
@@ -69,6 +70,7 @@ function startMessageUpdates(){
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&!$("#messagesView").classList.contains("hidden"))loadMessages(true)});
 window.addEventListener("focus",()=>{if(!$("#messagesView").classList.contains("hidden"))loadMessages(true)});
 $("#messageRecipient").onchange=async e=>{activeRecipient=e.target.value;messageSignature="";await loadMessages(true)};
+$("#refreshMessagesBtn").onclick=async()=>{if(!activeRecipient)return toast("Selecciona un usuario");const button=$("#refreshMessagesBtn");button.disabled=true;button.classList.add("refreshing");const updated=await loadMessages(true);button.classList.remove("refreshing");button.disabled=false;if(updated)toast("Mensajes actualizados")};
 $("#messageForm").onsubmit=async e=>{e.preventDefault();const body=$("#messageBody").value.trim();if(!activeRecipient)return toast("Selecciona un usuario");const {error}=await sb.from("messages").insert({sender_id:state.user.id,recipient_id:activeRecipient,body});if(error)return toast(error.message);$("#messageBody").value="";await loadMessages()};
 
 // Códigos QR (Texto, URL y TransferNow manual)

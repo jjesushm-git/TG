@@ -1,4 +1,4 @@
-const CACHE="tablerogo-v1.1.8",FILES=["./","index.html","styles.css","aquarium.css","notes-v116.css","features-v117.css","app.js","aquarium.js","features-v117.js","config.js","manifest.webmanifest","icon.svg","chalkboard.png","vendor/qrcode.min.js","vendor/jspdf.umd.min.js"];
+const CACHE="tablerogo-v1.1.9",FILES=["./","index.html","styles.css","aquarium.css","notes-v116.css","features-v117.css","app.js","aquarium.js","features-v117.js","config.js","manifest.webmanifest","icon.svg","chalkboard.png","vendor/qrcode.min.js","vendor/jspdf.umd.min.js"];
 self.addEventListener("install",e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)).then(()=>self.skipWaiting())));
 self.addEventListener("activate",e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener("fetch",e=>{if(e.request.method!=="GET")return;e.respondWith(fetch(e.request).then(r=>{const copy=r.clone();caches.open(CACHE).then(c=>c.put(e.request,copy));return r}).catch(()=>caches.match(e.request).then(r=>r||caches.match("./"))))});
