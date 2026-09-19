@@ -101,23 +101,27 @@ revoke all on function public.revoke_user(uuid) from public;
 grant execute on function public.approve_users(uuid[]) to authenticated;
 grant execute on function public.revoke_user(uuid) to authenticated;
 
--- Mensajes privados; los enlaces de TransferNow se guardan como texto.
+-- Mensajes privados y del Recreo; los enlaces de TransferNow se guardan como texto.
 create table if not exists public.messages (
   id uuid primary key default gen_random_uuid(),
   sender_id uuid not null references auth.users(id) on delete cascade,
-  recipient_id uuid not null references auth.users(id) on delete cascade,
+  recipient_id uuid references auth.users(id) on delete cascade,
   body varchar(1000) not null check(char_length(body) between 1 and 1000),
+  room text not null default 'direct' check(room in ('direct','recreo')),
   created_at timestamptz not null default now(),
   read_at timestamptz
 );
 alter table public.messages add column if not exists updated_at timestamptz;
+alter table public.messages add column if not exists room text not null default 'direct';
+alter table public.messages alter column recipient_id drop not null;
 alter table public.messages replica identity full;
 create index if not exists idx_messages_pair on public.messages(sender_id,recipient_id,created_at);
+create index if not exists idx_messages_room on public.messages(room,created_at);
 alter table public.messages enable row level security;
 drop policy if exists "messages_read" on public.messages;
-create policy "messages_read" on public.messages for select to authenticated using (public.is_approved() and (sender_id=auth.uid() or recipient_id=auth.uid()));
+create policy "messages_read" on public.messages for select to authenticated using (public.is_approved() and (room='recreo' or sender_id=auth.uid() or recipient_id=auth.uid()));
 drop policy if exists "messages_send" on public.messages;
-create policy "messages_send" on public.messages for insert to authenticated with check (public.is_approved() and sender_id=auth.uid() and exists(select 1 from public.profiles where id=recipient_id and status='approved'));
+create policy "messages_send" on public.messages for insert to authenticated with check (public.is_approved() and sender_id=auth.uid() and ((room='recreo' and recipient_id is null) or (room='direct' and recipient_id is not null and exists(select 1 from public.profiles where id=recipient_id and status='approved'))));
 drop policy if exists "messages_update_own" on public.messages;
 create policy "messages_update_own" on public.messages for update to authenticated using (public.is_approved() and sender_id=auth.uid()) with check (public.is_approved() and sender_id=auth.uid());
 drop policy if exists "messages_delete_own" on public.messages;
@@ -125,6 +129,21 @@ create policy "messages_delete_own" on public.messages for delete to authenticat
 revoke all on table public.messages from anon;
 grant select,insert,delete on table public.messages to authenticated;
 grant update(body,updated_at) on table public.messages to authenticated;
+
+create or replace function public.clear_chat(target_user uuid default null,target_room text default 'direct')
+returns void language plpgsql security definer set search_path=public
+as $$ begin
+  if not public.is_approved() then raise exception 'Cuenta no autorizada'; end if;
+  if target_room='recreo' then
+    delete from public.messages where room='recreo' and sender_id=auth.uid();
+  elsif target_room='direct' and target_user is not null then
+    delete from public.messages where room='direct' and ((sender_id=auth.uid() and recipient_id=target_user) or (sender_id=target_user and recipient_id=auth.uid()));
+  else
+    raise exception 'Chat no válido';
+  end if;
+end $$;
+revoke all on function public.clear_chat(uuid,text) from public;
+grant execute on function public.clear_chat(uuid,text) to authenticated;
 
 -- Activa mensajes en tiempo real. El bloque es seguro al ejecutar el SQL más de una vez.
 do $$ begin

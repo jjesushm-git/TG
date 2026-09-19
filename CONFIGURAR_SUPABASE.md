@@ -20,6 +20,8 @@ Desde la versión 1.1.8 debes ejecutar nuevamente el archivo completo. Es seguro
 
 Para la versión 1.1.10 vuelve a ejecutarlo una vez: agrega la edición y eliminación segura de mensajes propios. No borra las conversaciones existentes.
 
+Para la versión 1.1.11 vuelve a ejecutarlo una vez. Añade el chat grupal `Recreo`, permite conservar los mensajes existentes y crea la función segura para borrar conversaciones.
+
 Si aparece un error indicando que `pg_cron` no está disponible, entra en **Database > Extensions**, busca `pg_cron`, actívalo y vuelve a ejecutar el archivo.
 
 ## 3. Configurar las cuentas
@@ -51,4 +53,4 @@ Agrega la misma dirección en **Redirect URLs**.
 
 ## 6. Comprobar
 
-En **Data API > Settings > Exposed tables**, activa `ponds`, `notes`, `profiles` y `messages`. En **Exposed functions**, activa `approve_users` y `revoke_user`; no expongas `cleanup_expired_pending_users`. Publica los archivos. La primera cuenta existente queda como administradora; crea una segunda cuenta, entra con la administradora y abre **Ajustes > Autorizar cuentas nuevas**. Verifica que cada cuenta vea únicamente sus propias pizarras y notas.
+En **Data API > Settings > Exposed tables**, activa `ponds`, `notes`, `profiles` y `messages`. En **Exposed functions**, activa `approve_users`, `revoke_user` y `clear_chat`; no expongas `cleanup_expired_pending_users`. Publica los archivos. La primera cuenta existente queda como administradora; crea una segunda cuenta, entra con la administradora y abre **Ajustes > Autorizar cuentas nuevas**. Verifica que cada cuenta vea únicamente sus propias pizarras y notas.

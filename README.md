@@ -1,4 +1,4 @@
-# TableroGO v1.1.10
+# TableroGO v1.1.11
 
 PWA escolar de notas, QR y mensajería privada con GitHub Pages + Supabase.
 
@@ -6,7 +6,7 @@ PWA escolar de notas, QR y mensajería privada con GitHub Pages + Supabase.
 
 1. Crea un proyecto gratuito en Supabase.
 2. Abre **SQL Editor**, pega `supabase.sql` y ejecútalo.
-3. En **Data API > Settings > Exposed tables**, activa `ponds`, `notes`, `profiles` y `messages`. En **Exposed functions**, activa `approve_users` y `revoke_user`.
+3. En **Data API > Settings > Exposed tables**, activa `ponds`, `notes`, `profiles` y `messages`. En **Exposed functions**, activa `approve_users`, `revoke_user` y `clear_chat`.
 4. En **Authentication > Providers > Email**, deja activo Email. Puedes desactivar “Confirm email” durante las pruebas.
 5. En **Project Settings > API**, copia `Project URL` y la clave pública `anon`.
 6. Pega ambos valores en `config.js`. La clave `anon` es pública; nunca pongas la clave `service_role` en estos archivos.
@@ -36,4 +36,9 @@ Sube todos los archivos a la raíz del repositorio. En **Settings > Pages**, sel
 - Las notas del pizarrón usan tipografía Arial para facilitar la lectura.
 - Mensajería recibe nuevos mensajes mediante Supabase Realtime y verifica novedades cada dos segundos como respaldo.
 - Lápiz escolar ✏️ para editar los mensajes propios y bote 🗑️ para eliminarlos.
+- Los mensajes propios se pueden editar o borrar aunque sean antiguos (se cargan hasta 1000 por conversación).
+- **Borrar todo el chat** elimina ambos lados de una conversación privada. En **Recreo** solo elimina los mensajes propios, para proteger los mensajes del grupo.
+- **Recreo** reúne a todas las cuentas autorizadas y admite mensajes y enlaces de archivos de TransferNow.
+- Mensajería recuerda la última conversación seleccionada en ese dispositivo.
+- Eliminación con animación escolar lenta a pantalla completa: hoja arrancada, hecha bola y lanzada al bote.
 - Al borrar, la hoja se arruga y sigue una trayectoria de básquet hacia el bote.
