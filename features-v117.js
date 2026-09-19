@@ -15,8 +15,8 @@ window.authorizeCurrentUser=async function(){
 
 const originalSettingsClick=$("#settingsBtn").onclick;
 $("#settingsBtn").onclick=()=>{originalSettingsClick?.();$("#adminSettings").classList.toggle("hidden",currentProfile?.role!=="admin")};
-$("#qrBtn").onclick=()=>{showScreen("qrView");showQrTab("create")};
-$("#messagesBtn").onclick=async()=>{showScreen("messagesView");await loadRecipients()};
+$("#qrBtn").onclick=()=>{resetQrChooser();showScreen("qrView");showQrTab("create")};
+$("#messagesBtn").onclick=async()=>{showScreen("messagesView");startMessageUpdates();await loadRecipients()};
 $$('[data-feature-home]').forEach(button=>button.onclick=()=>showScreen("homeView"));
 
 // Administración de cuentas
@@ -46,20 +46,29 @@ async function openUsers(){
 $("#usersBtn").onclick=()=>{$("#settingsDialog").close();openUsers()};
 
 // Mensajería
-let activeRecipient="";
+let activeRecipient="",messageChannel=null,messagePoll=null,messageBusy=false,messageSignature="";
 const isTransferNow=value=>/^https?:\/\/(?:www\.)?transfernow\.net\//i.test(value.trim());
 async function loadRecipients(){
   const {data,error}=await sb.from("profiles").select("id,email").eq("status","approved").neq("id",state.user.id).order("email");
   if(error)return toast(error.message);const select=$("#messageRecipient");select.innerHTML=data.length?data.map(p=>`<option value="${p.id}">${escapeHtml(p.email)}</option>`).join(""):"<option value=''>No hay otros usuarios</option>";
-  activeRecipient=select.value;if(activeRecipient)await loadMessages();else $("#messageList").innerHTML="<p class='muted'>No hay otros usuarios autorizados.</p>"
+  activeRecipient=select.value;messageSignature="";if(activeRecipient)await loadMessages(true);else $("#messageList").innerHTML="<p class='muted'>No hay otros usuarios autorizados.</p>"
 }
-async function loadMessages(){
-  if(!activeRecipient)return;const me=state.user.id;
+async function loadMessages(force=false){
+  if(!activeRecipient||messageBusy)return;messageBusy=true;const me=state.user.id;
   const filter=`and(sender_id.eq.${me},recipient_id.eq.${activeRecipient}),and(sender_id.eq.${activeRecipient},recipient_id.eq.${me})`;
-  const {data,error}=await sb.from("messages").select("*").or(filter).order("created_at",{ascending:true}).limit(200);if(error)return toast(error.message);
+  const {data,error}=await sb.from("messages").select("*").or(filter).order("created_at",{ascending:true}).limit(200);messageBusy=false;if(error)return toast(error.message);
+  const signature=data.map(m=>m.id).join("|");if(!force&&signature===messageSignature)return;messageSignature=signature;
   const box=$("#messageList");box.innerHTML=data.map(m=>{const file=isTransferNow(m.body);return `<article class="message ${m.sender_id===me?"mine":""}">${file?`<a class="transfer-message" href="${escapeHtml(m.body)}" target="_blank" rel="noopener noreferrer">📎 Archivo en TransferNow<br><small>Disponible temporalmente · Abrir o descargar</small></a>`:`<span>${escapeHtml(m.body)}</span>`}<time>${stamp(m.created_at)}</time></article>`}).join("")||"<p class='muted'>Aún no hay mensajes.</p>";box.scrollTop=box.scrollHeight
 }
-$("#messageRecipient").onchange=async e=>{activeRecipient=e.target.value;await loadMessages()};
+function activePair(message){const me=state.user?.id;return activeRecipient&&((message.sender_id===me&&message.recipient_id===activeRecipient)||(message.sender_id===activeRecipient&&message.recipient_id===me))}
+function startMessageUpdates(){
+  if(!cloud||!state.user)return;
+  if(!messageChannel)messageChannel=sb.channel(`tablerogo-messages-${state.user.id}`).on("postgres_changes",{event:"INSERT",schema:"public",table:"messages"},payload=>{if(activePair(payload.new)&&!$("#messagesView").classList.contains("hidden"))loadMessages(true)}).subscribe();
+  if(!messagePoll)messagePoll=setInterval(()=>{if(!$("#messagesView").classList.contains("hidden")&&document.visibilityState==="visible")loadMessages()},2000)
+}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&!$("#messagesView").classList.contains("hidden"))loadMessages(true)});
+window.addEventListener("focus",()=>{if(!$("#messagesView").classList.contains("hidden"))loadMessages(true)});
+$("#messageRecipient").onchange=async e=>{activeRecipient=e.target.value;messageSignature="";await loadMessages(true)};
 $("#messageForm").onsubmit=async e=>{e.preventDefault();const body=$("#messageBody").value.trim();if(!activeRecipient)return toast("Selecciona un usuario");const {error}=await sb.from("messages").insert({sender_id:state.user.id,recipient_id:activeRecipient,body});if(error)return toast(error.message);$("#messageBody").value="";await loadMessages()};
 
 // Códigos QR (Texto, URL y TransferNow manual)
@@ -70,6 +79,7 @@ function qrItems(){try{return JSON.parse(localStorage.getItem(qrKey()))||[]}catc
 function putQr(list){localStorage.setItem(qrKey(),JSON.stringify(list))}
 function cleanQr(){const now=Date.now(),list=qrItems(),valid=list.filter(x=>x.keep||now-x.createdAt<QR_DAY);if(valid.length!==list.length)putQr(valid);return valid}
 function showQrTab(tab){const saved=tab==="saved";$("#qrCreatePanel").classList.toggle("hidden",saved);$("#qrSavedPanel").classList.toggle("hidden",!saved);$("#qrCreateTab").classList.toggle("active",!saved);$("#qrSavedTab").classList.toggle("active",saved);if(saved)renderSavedQr()}
+function resetQrChooser(){qrType="";currentQr=null;$("#qrValue").value="";$("#qrError").textContent="";$("#qrForm").classList.add("hidden");$("#qrPreview").classList.add("hidden");$("#qrTypeChooser").classList.remove("hidden")}
 $("#qrCreateTab").onclick=()=>showQrTab("create");$("#qrSavedTab").onclick=()=>showQrTab("saved");
 $$('[data-qr-type]').forEach(button=>button.onclick=()=>{qrType=button.dataset.qrType;$("#qrTypeChooser").classList.add("hidden");$("#qrForm").classList.remove("hidden");$("#qrPreview").classList.add("hidden");$("#qrInputLabel").textContent=qrType==="url"?"Enlace o URL":"Texto";$("#qrValue").placeholder=qrType==="url"?"https://ejemplo.com":"Escribe el contenido del QR"});
 $("#qrChangeType").onclick=()=>{$("#qrForm").classList.add("hidden");$("#qrPreview").classList.add("hidden");$("#qrTypeChooser").classList.remove("hidden");$("#qrValue").value=""};

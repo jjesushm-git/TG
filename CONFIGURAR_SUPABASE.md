@@ -16,6 +16,8 @@ El archivo SQL concede manualmente a los usuarios autenticados solamente los per
 
 Abre **SQL Editor > New query**, copia todo el contenido de `supabase.sql`, pulsa **Run** y confirma que aparezca “Success”. El archivo crea perfiles, roles, autorización de cuentas, mensajes y la limpieza automática de solicitudes pendientes después de siete días.
 
+En la versión 1.1.8 debes ejecutar nuevamente el archivo completo. Es seguro repetirlo y activará la tabla `messages` en Supabase Realtime para recibir mensajes sin salir de la pantalla.
+
 Si aparece un error indicando que `pg_cron` no está disponible, entra en **Database > Extensions**, busca `pg_cron`, actívalo y vuelve a ejecutar el archivo.
 
 ## 3. Configurar las cuentas

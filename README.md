@@ -1,4 +1,4 @@
-# TableroGO v1.1.7
+# TableroGO v1.1.8
 
 PWA escolar de notas, QR y mensajería privada con GitHub Pages + Supabase.
 
@@ -32,3 +32,6 @@ Sube todos los archivos a la raíz del repositorio. En **Settings > Pages**, sel
 - Mensajería privada entre usuarios autorizados, con tarjetas para enlaces de TransferNow.
 - La primera cuenta existente queda como administradora; las cuentas nuevas requieren autorización desde Ajustes.
 - Las cuentas pendientes se eliminan automáticamente al cumplir siete días mediante `pg_cron`.
+- Códigos QR siempre abre mostrando de nuevo las opciones Texto, URL y TransferNow.
+- Las notas del pizarrón usan tipografía Arial para facilitar la lectura.
+- Mensajería recibe nuevos mensajes mediante Supabase Realtime y verifica novedades cada dos segundos como respaldo.

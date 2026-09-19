@@ -1,5 +1,5 @@
 .fish-tank.notes-board{align-items:start}
-.board-note{align-self:start;min-height:0!important;background:var(--paper)!important;padding:27px 13px 13px!important}
+.board-note{align-self:start;min-height:0!important;background:var(--paper)!important;padding:27px 13px 13px!important;font-family:Arial,Helvetica,sans-serif!important}
 .board-note.small{min-height:92px!important}
 .board-note.medium{min-height:136px!important}
 .board-note.large{min-height:180px!important}

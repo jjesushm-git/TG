@@ -119,6 +119,16 @@ create policy "messages_send" on public.messages for insert to authenticated wit
 revoke all on table public.messages from anon;
 grant select,insert on table public.messages to authenticated;
 
+-- Activa mensajes en tiempo real. El bloque es seguro al ejecutar el SQL más de una vez.
+do $$ begin
+  if not exists(
+    select 1 from pg_publication_tables
+    where pubname='supabase_realtime' and schemaname='public' and tablename='messages'
+  ) then
+    execute 'alter publication supabase_realtime add table public.messages';
+  end if;
+end $$;
+
 -- Borra de Auth las cuentas pendientes que cumplan siete días.
 create or replace function public.cleanup_expired_pending_users()
 returns void language plpgsql security definer set search_path=public,auth
