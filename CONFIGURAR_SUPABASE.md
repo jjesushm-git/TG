@@ -14,7 +14,9 @@ El archivo SQL concede manualmente a los usuarios autenticados solamente los per
 
 ## 2. Crear tablas y seguridad
 
-Abre **SQL Editor > New query**, copia todo el contenido de `supabase.sql`, pulsa **Run** y confirma que aparezca “Success”.
+Abre **SQL Editor > New query**, copia todo el contenido de `supabase.sql`, pulsa **Run** y confirma que aparezca “Success”. El archivo crea perfiles, roles, autorización de cuentas, mensajes y la limpieza automática de solicitudes pendientes después de siete días.
+
+Si aparece un error indicando que `pg_cron` no está disponible, entra en **Database > Extensions**, busca `pg_cron`, actívalo y vuelve a ejecutar el archivo.
 
 ## 3. Configurar las cuentas
 
@@ -45,4 +47,4 @@ Agrega la misma dirección en **Redirect URLs**.
 
 ## 6. Comprobar
 
-Publica los archivos, crea dos cuentas diferentes y verifica que cada cuenta vea únicamente sus propios charcos y notas. Las políticas RLS incluidas en `supabase.sql` realizan esa separación.
+En **Data API > Settings > Exposed tables**, activa `ponds`, `notes`, `profiles` y `messages`. En **Exposed functions**, activa `approve_users` y `revoke_user`; no expongas `cleanup_expired_pending_users`. Publica los archivos. La primera cuenta existente queda como administradora; crea una segunda cuenta, entra con la administradora y abre **Ajustes > Autorizar cuentas nuevas**. Verifica que cada cuenta vea únicamente sus propias pizarras y notas.

@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="aquarium.css">
   <link rel="stylesheet" href="notes-v116.css">
+  <link rel="stylesheet" href="features-v117.css">
   <title>TableroGO</title>
 </head>
 <body>
@@ -26,7 +27,7 @@
       </form>
       <button id="registerBtn" class="text-btn">Crear cuenta</button>
       <button id="demoBtn" class="hidden" aria-hidden="true" tabindex="-1">Probar en este dispositivo</button>
-      <small id="authHelp">Configura Supabase para sincronizar entre dispositivos.</small>
+      <small id="authHelp">Ingresa con una cuenta autorizada.</small>
     </div>
   </section>
 
@@ -35,7 +36,7 @@
       <button id="homeBtn" class="brand">🎓 <span>TableroGO</span></button>
       <div class="pond-control">
         <button id="singlePondBtn" class="pond-pill">Mi pizarra</button>
-        <label id="pondSelectWrap" class="hidden"><span class="sr-only">Seleccionar charco</span><select id="pondSelect"></select></label>
+        <label id="pondSelectWrap" class="hidden"><span class="sr-only">Seleccionar pizarra</span><select id="pondSelect"></select></label>
       </div>
     </header>
 
@@ -47,18 +48,55 @@
       <div class="home-actions">
         <button id="newNoteBtn" class="menu-card"><b>＋</b><span>Nueva nota</span></button>
         <button id="myPondBtn" class="menu-card"><b>📌</b><span>Mi pizarra</span></button>
+        <button id="qrBtn" class="menu-card"><b>▦</b><span>Códigos QR</span></button>
+        <button id="messagesBtn" class="menu-card"><b>✉</b><span>Mensajería</span></button>
         <button id="settingsBtn" class="menu-card"><b>⚙️</b><span>Ajustes</span></button>
       </div>
     </section>
 
-    <section id="pondView" class="screen pond-screen hidden" aria-label="Acuario de notas">
-      <div class="turn-hint">↕ Desliza para girar la pecera</div>
+    <section id="pondView" class="screen pond-screen hidden" aria-label="Pizarrón de notas">
+      <div class="turn-hint">Notas recientes primero</div>
       <div class="water-rays"></div><div id="bubbles"></div>
       <div class="reef reef-left">♒</div><div class="reef reef-right">♒</div>
       <div id="fishTank" class="fish-tank"></div>
       <div class="sand"><span>◌</span><span>◇</span><span>◌</span></div>
       <div id="emptyPond" class="empty-pond hidden"><b>La pizarra está vacía</b><span>Crea una nota para colocarla aquí.</span></div>
       <button id="pondAddBtn" class="fab" aria-label="Nueva nota">＋</button>
+    </section>
+
+    <section id="qrView" class="screen feature-screen hidden" aria-label="Códigos QR">
+      <div class="feature-head"><button class="feature-back" data-feature-home>‹</button><div><h2>Códigos QR</h2><p>Convierte texto o enlaces en QR</p></div></div>
+      <div class="feature-wrap">
+        <div class="feature-tabs"><button id="qrCreateTab" class="active">Generar QR</button><button id="qrSavedTab">Mis QR</button></div>
+        <section id="qrCreatePanel">
+          <div id="qrTypeChooser" class="type-grid">
+            <button data-qr-type="text"><b>𝐓</b><span>Texto</span><small>Mensaje, dato o nota</small></button>
+            <button data-qr-type="url"><b>🔗</b><span>URL</span><small>Página o enlace web</small></button>
+            <a href="https://www.transfernow.net/es" target="_blank" rel="noopener noreferrer"><b>↗</b><span>TransferNow</span><small>Sube el archivo y pega el enlace en URL</small></a>
+          </div>
+          <form id="qrForm" class="feature-card hidden">
+            <label><span id="qrInputLabel">Contenido</span><textarea id="qrValue" maxlength="1200" rows="5" required></textarea></label>
+            <p id="qrError" class="form-error"></p>
+            <div class="form-row"><button type="button" id="qrChangeType">Cambiar tipo</button><button class="primary" type="submit">Generar vista previa</button></div>
+          </form>
+          <div id="qrPreview" class="feature-card qr-preview hidden">
+            <canvas id="qrCanvas"></canvas><p id="qrPreviewText"></p>
+            <button id="qrSave" class="primary">Guardar en Mis QR</button>
+            <div class="form-row"><button id="qrJpg">Descargar JPEG</button><button id="qrPdf">Descargar PDF</button></div>
+          </div>
+        </section>
+        <section id="qrSavedPanel" class="hidden"><p class="muted">Los QR no protegidos se eliminan después de 24 horas.</p><div id="qrSavedList"></div></section>
+      </div>
+    </section>
+
+    <section id="messagesView" class="screen feature-screen hidden" aria-label="Mensajería">
+      <div class="feature-head"><button class="feature-back" data-feature-home>‹</button><div><h2>Mensajería</h2><p>Mensajes entre usuarios autorizados</p></div></div>
+      <div class="feature-wrap chat-layout">
+        <label>Conversación con<select id="messageRecipient"></select></label>
+        <div id="messageList" class="message-list"><p class="muted">Selecciona un usuario.</p></div>
+        <form id="messageForm" class="message-form"><textarea id="messageBody" maxlength="1000" rows="3" placeholder="Escribe un mensaje o pega un enlace de TransferNow" required></textarea><div class="form-row"><a class="transfer-button" href="https://www.transfernow.net/es" target="_blank" rel="noopener noreferrer">Enviar archivo</a><button class="primary">Enviar</button></div></form>
+        <small class="muted">Enviar archivo abre TransferNow. Sube el archivo, copia el enlace y pégalo aquí. Su disponibilidad depende de TransferNow.</small>
+      </div>
     </section>
   </main>
 
@@ -85,10 +123,14 @@
 
   <dialog id="moveDialog" class="bubble-dialog"><div><button class="x" data-close="moveDialog">×</button><h2>Mover a pizarra</h2><select id="moveSelect"></select><button id="confirmMoveBtn" class="primary">Mover</button></div></dialog>
   <dialog id="confirmDialog" class="bubble-dialog"><div><h2>¿Borrar esta nota?</h2><p>Esta acción no se puede deshacer.</p><div class="modal-actions"><button data-close="confirmDialog">Regresar</button><button id="confirmDeleteBtn" class="danger">Sí, borrar</button></div></div></dialog>
-  <dialog id="settingsDialog" class="bubble-dialog"><div><button class="x" data-close="settingsDialog">×</button><h2>Ajustes</h2><div class="setting-row"><span>Versión</span><b>1.1.6</b></div><div class="setting-row"><span>Notas en esta pizarra</span><b id="noteTotal">0 / 15</b></div><button id="addPondBtn" class="primary">＋ Agregar pizarra</button><div id="pondList" class="pond-list"></div><button id="installBtn" class="secondary hidden">Instalar aplicación</button><button id="logoutBtn" class="text-btn">Cerrar sesión</button></div></dialog>
+  <dialog id="settingsDialog" class="bubble-dialog"><div><button class="x" data-close="settingsDialog">×</button><h2>Ajustes</h2><div class="setting-row"><span>Versión</span><b>1.1.7</b></div><div class="setting-row"><span>Notas en esta pizarra</span><b id="noteTotal">0 / 15</b></div><button id="addPondBtn" class="primary">＋ Agregar pizarra</button><div id="pondList" class="pond-list"></div><div id="adminSettings" class="admin-settings hidden"><h3>Administración</h3><button id="pendingUsersBtn" class="secondary">Autorizar cuentas nuevas</button><button id="usersBtn" class="secondary">Lista de usuarios</button></div><button id="installBtn" class="secondary hidden">Instalar aplicación</button><button id="logoutBtn" class="text-btn">Cerrar sesión</button></div></dialog>
   <dialog id="pondDialog" class="bubble-dialog"><form id="pondForm" method="dialog"><button class="x" data-close="pondDialog">×</button><h2>Nueva pizarra</h2><label>Nombre<input id="pondName" maxlength="20" required placeholder="Ejemplo: Trabajo"></label><small>Se guardará como “Pizarra Trabajo”.</small><button class="primary" type="submit">Crear pizarra</button></form></dialog>
+  <dialog id="pendingUsersDialog" class="bubble-dialog"><form id="pendingUsersForm"><button type="button" class="x" data-close="pendingUsersDialog">×</button><h2>Cuentas nuevas</h2><p class="muted">Selecciona las cuentas que deseas autorizar.</p><div id="pendingUsersList" class="user-list"></div><button class="primary" type="submit">Guardar cambios</button></form></dialog>
+  <dialog id="usersDialog" class="bubble-dialog"><div><button class="x" data-close="usersDialog">×</button><h2>Usuarios autorizados</h2><div id="usersList" class="user-list"></div></div></dialog>
+  <dialog id="qrViewer" class="bubble-dialog"><div><button class="x" data-close="qrViewer">×</button><h2>Código QR</h2><img id="qrViewerImg" class="qr-large" alt="Código QR ampliado"><p id="qrViewerText"></p></div></dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="config.js"></script><script src="app.js"></script><script src="aquarium.js"></script>
+  <script src="vendor/qrcode.min.js"></script><script src="vendor/jspdf.umd.min.js"></script>
+  <script src="config.js"></script><script src="app.js"></script><script src="aquarium.js"></script><script src="features-v117.js"></script>
 </body>
 </html>
